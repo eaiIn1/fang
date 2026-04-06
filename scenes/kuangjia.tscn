@@ -135,8 +135,8 @@ text = "Settings"
 [node name="DebugPanel" type="PanelContainer" parent="."]
 offset_left = 24.0
 offset_top = 148.0
-offset_right = 276.0
-offset_bottom = 618.0
+offset_right = 344.0
+offset_bottom = 708.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_mtm3m")
 
 [node name="MarginContainer" type="MarginContainer" parent="DebugPanel"]
@@ -245,33 +245,66 @@ value = 100.0
 
 [node name="BoardHeader" type="HBoxContainer" parent="DebugPanel/MarginContainer/DebugContent"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 12
+size_flags_horizontal = 3
 
-[node name="BoardWidthLabel" type="Label" parent="DebugPanel/MarginContainer/DebugContent/BoardHeader"]
+[node name="BoardWidthSection" type="HBoxContainer" parent="DebugPanel/MarginContainer/DebugContent/BoardHeader"]
+layout_mode = 2
+theme_override_constants/separation = 6
+size_flags_horizontal = 3
+
+[node name="BoardWidthLabel" type="Label" parent="DebugPanel/MarginContainer/DebugContent/BoardHeader/BoardWidthSection"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.92549, 0.968627, 1, 0.92)
 text = "W"
 
-[node name="BoardWidthSpinBox" type="SpinBox" parent="DebugPanel/MarginContainer/DebugContent/BoardHeader"]
-custom_minimum_size = Vector2(78, 0)
+[node name="BoardWidthSpinBox" type="SpinBox" parent="DebugPanel/MarginContainer/DebugContent/BoardHeader/BoardWidthSection"]
+custom_minimum_size = Vector2(62, 0)
 layout_mode = 2
 min_value = 4.0
 max_value = 16.0
 step = 1.0
 value = 8.0
+size_flags_horizontal = 3
 
-[node name="BoardHeightLabel" type="Label" parent="DebugPanel/MarginContainer/DebugContent/BoardHeader"]
+[node name="BoardWidthDecreaseButton" type="Button" parent="DebugPanel/MarginContainer/DebugContent/BoardHeader/BoardWidthSection"]
+custom_minimum_size = Vector2(40, 30)
+layout_mode = 2
+text = "-"
+
+[node name="BoardWidthIncreaseButton" type="Button" parent="DebugPanel/MarginContainer/DebugContent/BoardHeader/BoardWidthSection"]
+custom_minimum_size = Vector2(40, 30)
+layout_mode = 2
+text = "+"
+
+[node name="BoardHeightSection" type="HBoxContainer" parent="DebugPanel/MarginContainer/DebugContent/BoardHeader"]
+layout_mode = 2
+theme_override_constants/separation = 6
+size_flags_horizontal = 3
+
+[node name="BoardHeightLabel" type="Label" parent="DebugPanel/MarginContainer/DebugContent/BoardHeader/BoardHeightSection"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.92549, 0.968627, 1, 0.92)
 text = "H"
 
-[node name="BoardHeightSpinBox" type="SpinBox" parent="DebugPanel/MarginContainer/DebugContent/BoardHeader"]
-custom_minimum_size = Vector2(78, 0)
+[node name="BoardHeightSpinBox" type="SpinBox" parent="DebugPanel/MarginContainer/DebugContent/BoardHeader/BoardHeightSection"]
+custom_minimum_size = Vector2(62, 0)
 layout_mode = 2
 min_value = 4.0
 max_value = 16.0
 step = 1.0
 value = 8.0
+size_flags_horizontal = 3
+
+[node name="BoardHeightDecreaseButton" type="Button" parent="DebugPanel/MarginContainer/DebugContent/BoardHeader/BoardHeightSection"]
+custom_minimum_size = Vector2(40, 30)
+layout_mode = 2
+text = "-"
+
+[node name="BoardHeightIncreaseButton" type="Button" parent="DebugPanel/MarginContainer/DebugContent/BoardHeader/BoardHeightSection"]
+custom_minimum_size = Vector2(40, 30)
+layout_mode = 2
+text = "+"
 
 [node name="PiecesTitle" type="Label" parent="DebugPanel/MarginContainer/DebugContent"]
 layout_mode = 2
@@ -280,7 +313,7 @@ theme_override_font_sizes/font_size = 14
 text = "Pieces"
 
 [node name="PieceScroll" type="ScrollContainer" parent="DebugPanel/MarginContainer/DebugContent"]
-custom_minimum_size = Vector2(0, 156)
+custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
 horizontal_scroll_mode = 0
 vertical_scroll_mode = 2
@@ -288,7 +321,7 @@ vertical_scroll_mode = 2
 [node name="PieceList" type="GridContainer" parent="DebugPanel/MarginContainer/DebugContent/PieceScroll"]
 layout_mode = 2
 size_flags_horizontal = 3
-columns = 2
+columns = 3
 theme_override_constants/h_separation = 8
 theme_override_constants/v_separation = 8
 

@@ -14,7 +14,7 @@ const SCORE_TO_TOGGLE_GAP := 16.0
 const MIN_BOARD_UI_CLEARANCE := 12.0
 const EDITOR_PREVIEW_PIECES := ["T", "L", "O"]
 const SCORE_BASE := 100
-const DEBUG_PANEL_SIZE := Vector2(252, 560)
+const DEBUG_PANEL_SIZE := Vector2(320, 560)
 const DEBUG_TOGGLE_SIZE := Vector2(120, 44)
 const DEBUG_TOGGLE_GAP := 12.0
 const DEFAULT_AUDIO_LEVEL := 0.82
@@ -41,10 +41,14 @@ const PIECE_POOL_CARD_HEIGHT_RATIO := 1.14
 @onready var debug_title_label: Label = $DebugPanel/MarginContainer/DebugContent/DebugHeader/DebugTitle
 @onready var debug_close_button: Button = $DebugPanel/MarginContainer/DebugContent/DebugHeader/DebugCloseButton
 @onready var debug_note_label: Label = $DebugPanel/MarginContainer/DebugContent/DebugNote
-@onready var board_width_label: Label = $DebugPanel/MarginContainer/DebugContent/BoardHeader/BoardWidthLabel
-@onready var board_width_spinbox: SpinBox = $DebugPanel/MarginContainer/DebugContent/BoardHeader/BoardWidthSpinBox
-@onready var board_height_label: Label = $DebugPanel/MarginContainer/DebugContent/BoardHeader/BoardHeightLabel
-@onready var board_height_spinbox: SpinBox = $DebugPanel/MarginContainer/DebugContent/BoardHeader/BoardHeightSpinBox
+@onready var board_width_label: Label = $DebugPanel/MarginContainer/DebugContent/BoardHeader/BoardWidthSection/BoardWidthLabel
+@onready var board_width_spinbox: SpinBox = $DebugPanel/MarginContainer/DebugContent/BoardHeader/BoardWidthSection/BoardWidthSpinBox
+@onready var board_width_decrease_button: Button = $DebugPanel/MarginContainer/DebugContent/BoardHeader/BoardWidthSection/BoardWidthDecreaseButton
+@onready var board_width_increase_button: Button = $DebugPanel/MarginContainer/DebugContent/BoardHeader/BoardWidthSection/BoardWidthIncreaseButton
+@onready var board_height_label: Label = $DebugPanel/MarginContainer/DebugContent/BoardHeader/BoardHeightSection/BoardHeightLabel
+@onready var board_height_spinbox: SpinBox = $DebugPanel/MarginContainer/DebugContent/BoardHeader/BoardHeightSection/BoardHeightSpinBox
+@onready var board_height_decrease_button: Button = $DebugPanel/MarginContainer/DebugContent/BoardHeader/BoardHeightSection/BoardHeightDecreaseButton
+@onready var board_height_increase_button: Button = $DebugPanel/MarginContainer/DebugContent/BoardHeader/BoardHeightSection/BoardHeightIncreaseButton
 @onready var pieces_title_label: Label = $DebugPanel/MarginContainer/DebugContent/PiecesTitle
 @onready var piece_scroll: ScrollContainer = $DebugPanel/MarginContainer/DebugContent/PieceScroll
 @onready var piece_grid: GridContainer = $DebugPanel/MarginContainer/DebugContent/PieceScroll/PieceList
@@ -110,6 +114,14 @@ func _ready() -> void:
 		board_width_spinbox.value_changed.connect(_on_debug_board_size_changed)
 	if not board_height_spinbox.value_changed.is_connected(_on_debug_board_size_changed):
 		board_height_spinbox.value_changed.connect(_on_debug_board_size_changed)
+	if not board_width_decrease_button.pressed.is_connected(_on_board_width_decrease_pressed):
+		board_width_decrease_button.pressed.connect(_on_board_width_decrease_pressed)
+	if not board_width_increase_button.pressed.is_connected(_on_board_width_increase_pressed):
+		board_width_increase_button.pressed.connect(_on_board_width_increase_pressed)
+	if not board_height_decrease_button.pressed.is_connected(_on_board_height_decrease_pressed):
+		board_height_decrease_button.pressed.connect(_on_board_height_decrease_pressed)
+	if not board_height_increase_button.pressed.is_connected(_on_board_height_increase_pressed):
+		board_height_increase_button.pressed.connect(_on_board_height_increase_pressed)
 	if not audio_volume_slider.value_changed.is_connected(_on_audio_volume_changed):
 		audio_volume_slider.value_changed.connect(_on_audio_volume_changed)
 	if not audio_mute_checkbox.toggled.is_connected(_on_audio_mute_toggled):
@@ -416,6 +428,8 @@ func _sync_debug_controls() -> void:
 	_apply_debug_panel_visibility()
 	_update_audio_controls_ui()
 	_update_ui_scale_controls()
+	_layout_scene()
+	_layout_scene()
 
 
 func _on_debug_select_all_pressed() -> void:
@@ -460,6 +474,26 @@ func _on_debug_board_size_changed(_value: float) -> void:
 	_update_piece_pool_constraints(true)
 
 
+func _on_board_width_decrease_pressed() -> void:
+	board_width_spinbox.set_value(maxf(board_width_spinbox.min_value, board_width_spinbox.value - 1))
+	_update_piece_pool_constraints(true)
+
+
+func _on_board_width_increase_pressed() -> void:
+	board_width_spinbox.set_value(minf(board_width_spinbox.max_value, board_width_spinbox.value + 1))
+	_update_piece_pool_constraints(true)
+
+
+func _on_board_height_decrease_pressed() -> void:
+	board_height_spinbox.set_value(maxf(board_height_spinbox.min_value, board_height_spinbox.value - 1))
+	_update_piece_pool_constraints(true)
+
+
+func _on_board_height_increase_pressed() -> void:
+	board_height_spinbox.set_value(minf(board_height_spinbox.max_value, board_height_spinbox.value + 1))
+	_update_piece_pool_constraints(true)
+
+
 func _get_selected_piece_ids_from_pool() -> Array[String]:
 	var selected_piece_ids: Array[String] = []
 	for piece_id in TetrominoLibraryScript.get_piece_ids():
@@ -483,16 +517,13 @@ func _update_piece_pool_layout() -> void:
 		scrollbar_reserve = ceilf(vertical_scroll_bar.get_combined_minimum_size().x)
 	var available_width := maxf(1.0, visible_width - scrollbar_reserve)
 
-	var scale_span := maxf(0.001, UI_SCALE_MAX - UI_SCALE_HARD_MIN)
-	var scale_t := clampf((ui_scale_applied - UI_SCALE_HARD_MIN) / scale_span, 0.0, 1.0)
-	var target_card_width := lerpf(PIECE_POOL_CARD_MAX_WIDTH, PIECE_POOL_CARD_MIN_WIDTH, scale_t)
-	var columns := maxi(1, int(floor((available_width + PIECE_POOL_GRID_GAP) / (target_card_width + PIECE_POOL_GRID_GAP))))
+	var columns := 4
 	var actual_card_width := 0.0
 	while true:
 		actual_card_width = floorf(
 			(available_width - PIECE_POOL_GRID_GAP * float(columns - 1)) / float(columns)
 		)
-		if columns <= 1 or actual_card_width >= PIECE_POOL_CARD_FIT_MIN_WIDTH:
+		if columns <= 2 or actual_card_width >= PIECE_POOL_CARD_FIT_MIN_WIDTH:
 			break
 		columns -= 1
 	var card_size := Vector2(
@@ -673,6 +704,8 @@ func _update_debug_toggle_button() -> void:
 
 func _apply_debug_panel_visibility() -> void:
 	debug_panel.visible = debug_panel_open or Engine.is_editor_hint()
+	if debug_panel.visible:
+		call_deferred("_refresh_debug_panel")
 
 
 func _set_debug_panel_open(value: bool, play_sfx: bool = true) -> void:
@@ -681,6 +714,11 @@ func _set_debug_panel_open(value: bool, play_sfx: bool = true) -> void:
 	_apply_debug_panel_visibility()
 	if play_sfx:
 		_play_sfx("ui")
+
+
+func _refresh_debug_panel() -> void:
+	_layout_scene()
+	_update_piece_pool_layout()
 
 
 func _adjust_ui_scale(delta: float) -> void:
